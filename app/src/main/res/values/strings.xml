@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">WB_8_3</string>
+
+    <string name="search_bottom_nav_label">Search</string>
+    <string name="favorites_bottom_nav_label">Favorites</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="empty_favorite_list_message">Здесь пока ничего нет! Добавьте котиков в избранное</string>
+    <string name="about_bottom_nav_label">About</string>
+    <string name="author_label_text">Author:</string>
+    <string name="author_name_text">Лебедь Александр</string>
+    <string name="github_label_text">GitHub:</string>
+    <string name="github_link">https://github.com/LebedAlIv2601/WB_8_3</string>
+    <string name="date_of_creation_label_text">Date of Creation:</string>
+    <string name="date_of_creation_text">16.06.22</string>
+</resources>
