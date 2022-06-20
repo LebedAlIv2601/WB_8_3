@@ -24,9 +24,6 @@ class SearchFragment : Fragment() {
         viewModelFactory
     }
 
-    private var loadingPermission: Boolean = true
-
-    private var enableToTouchLike: Boolean = true
 
     @Inject
     lateinit var viewModelFactory: SearchViewModelFactory
@@ -55,71 +52,42 @@ class SearchFragment : Fragment() {
 
     private fun setupListeners() {
         binding?.buttonDislike?.setOnClickListener {
-            getCatWithObserver()
+            vm.getCat()
         }
         binding?.buttonLike?.setOnClickListener {
-            if(enableToTouchLike) {
-                addCatToFavorite()
-                vm.setEnableTouchLike(false)
-                getCatWithObserver()
-            }
+            vm.postCat()
         }
     }
 
     private fun setupObservers() {
-        vm.currentCat.observe(viewLifecycleOwner, Observer {
-            Log.e("URL", it.url)
-            binding?.catImageImageView?.setImageURI(it.url)
-            vm.setEnableTouchLike(true)
-        })
-
-        vm.loadingPermission.observe(viewLifecycleOwner, Observer {
-            loadingPermission = it
-        })
-
-        vm.enableToTouchLike.observe(viewLifecycleOwner, Observer{
-            enableToTouchLike = it
-        })
-
-        if (loadingPermission) {
-            getCatWithObserver()
-            vm.setLoadingPermissionFalse()
-        }
-    }
-
-    private fun addCatToFavorite() {
-        vm.postCat().observe(viewLifecycleOwner, Observer { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    if (resource.data == true) {
-                        Toast.makeText(context, "Cat added to favorite", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Can't add cat to favorite", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                is Resource.Error -> {
-                    resource.message?.let { Log.e("Error", it) }
-//                    Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
-                }
-                is Resource.Loading -> {
-
-                }
-            }
-        })
-    }
-
-    private fun getCatWithObserver() {
-        vm.getCat().observe(viewLifecycleOwner, Observer { resource ->
+        vm.currentCat.observe(viewLifecycleOwner, Observer {resource ->
             when (resource) {
                 is Resource.Success -> {
                     binding?.catImageImageView?.visibility = View.VISIBLE
-                    resource.data?.let { vm.setCurrentCat(it) }
+                    resource.data?.let { binding?.catImageImageView?.setImageURI(it.url) }
                 }
                 is Resource.Error -> {
                     resource.message?.let { Log.e("Error", it) }
                     Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
                     binding?.searchProgressBar?.visibility = View.GONE
                     binding?.catImageImageView?.visibility = View.GONE
+                }
+                is Resource.Loading -> {
+                    binding?.searchProgressBar?.visibility = View.VISIBLE
+                    binding?.catImageImageView?.visibility = View.GONE
+                }
+            }
+        })
+
+        vm.isCatAdded.observe(viewLifecycleOwner, Observer { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    if (resource.data == false) {
+                        Toast.makeText(context, "Can't add cat to favorite", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                is Resource.Error -> {
+                    resource.message?.let { Log.e("Error", it) }
                 }
                 is Resource.Loading -> {
                     binding?.searchProgressBar?.visibility = View.VISIBLE

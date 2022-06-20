@@ -23,8 +23,6 @@ class FavoriteFragment : Fragment() {
 
     private var adapter: FavoriteAdapter? = null
 
-    private var loadingPermission: Boolean = true
-
     private val vm: FavoriteViewModel by viewModels{
         viewModelFactory
     }
@@ -49,47 +47,35 @@ class FavoriteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        vm.getFavoriteCats()
         setupRecyclerView()
         setupObservers()
     }
 
     private fun setupObservers() {
-        vm.favoriteCatsList.observe(viewLifecycleOwner, Observer {
-            adapter?.submitList(it.reversed())
-            binding?.favoriteProgressBar?.visibility = View.GONE
-        })
-
-        vm.loadingPermission.observe(viewLifecycleOwner, Observer {
-            loadingPermission = it
-            Log.e("loadingPermissionObserve", it.toString())
-        })
-
-        if (loadingPermission) {
-            Log.e("loadingPermission", loadingPermission.toString())
-            vm.getFavoriteCats().observe(viewLifecycleOwner, Observer { resource ->
-                when (resource) {
-                    is Resource.Success -> {
-                        if(resource.data?.isNotEmpty() == true) {
-                            vm.setFavoriteCatsList(resource.data)
-                            binding?.emptyListMessageTextView?.visibility = View.GONE
-                        } else {
-                            binding?.emptyListMessageTextView?.visibility = View.VISIBLE
-                            binding?.favoriteProgressBar?.visibility = View.GONE
-                        }
-                    }
-                    is Resource.Error -> {
-                        resource.message?.let { Log.e("Error", it) }
-                        Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+        vm.favoriteCatsList.observe(viewLifecycleOwner, Observer {resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    if(resource.data?.isNotEmpty() == true) {
+                        adapter?.submitList(resource.data.reversed())
+                        binding?.favoriteProgressBar?.visibility = View.GONE
+                        binding?.emptyListMessageTextView?.visibility = View.GONE
+                    } else {
+                        binding?.emptyListMessageTextView?.visibility = View.VISIBLE
                         binding?.favoriteProgressBar?.visibility = View.GONE
                     }
-                    is Resource.Loading -> {
-                        Log.e("loadingPermissionInLoading", loadingPermission.toString())
-                        binding?.favoriteProgressBar?.visibility = View.VISIBLE
-                    }
                 }
-            })
-            vm.setLoadingPermissionFalse()
-        }
+                is Resource.Error -> {
+                    resource.message?.let { Log.e("Error", it) }
+                    Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+                    binding?.favoriteProgressBar?.visibility = View.GONE
+                }
+                is Resource.Loading -> {
+                    binding?.favoriteProgressBar?.visibility = View.VISIBLE
+                }
+            }
+        })
+
     }
 
     private fun setupRecyclerView() {

@@ -8,40 +8,37 @@ import androidx.lifecycle.liveData
 import com.example.wb_8_3.domain.model.CatModelDomain
 import com.example.wb_8_3.domain.usecase.GetFavoriteCatsUseCase
 import com.example.wb_8_3.utils.Resource
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 class FavoriteViewModel (private val getFavoriteCatsUseCase: GetFavoriteCatsUseCase): ViewModel(){
 
-    private var _favoriteCatsList = MutableLiveData<List<CatModelDomain>>()
-    val favoriteCatsList: LiveData<List<CatModelDomain>>
+    private var _favoriteCatsList = MutableLiveData<Resource<List<CatModelDomain>>>()
+    val favoriteCatsList: LiveData<Resource<List<CatModelDomain>>>
         get() = _favoriteCatsList
 
-    private val _loadingPermission = MutableLiveData<Boolean>()
-    val loadingPermission: LiveData<Boolean>
-        get() = _loadingPermission
+    private val vmJob = Job()
+    private val vmScope = CoroutineScope(Dispatchers.Main + vmJob)
 
-
-    init {
-        _loadingPermission.value = true
-    }
-
-    fun getFavoriteCats() = liveData(Dispatchers.IO) {
-        emit(Resource.Loading(data = null))
-        try {
-            Log.e("Loading", "Trying to load data from vm")
-            emit(Resource.Success(data = getFavoriteCatsUseCase.execute()))
-            Log.e("Loading", "Data loaded")
-        } catch (e: Exception) {
-            emit(Resource.Error(data = null, message = e.message ?: "Error Occurred!!!"))
+    fun getFavoriteCats(){
+        vmScope.launch {
+            getFavoriteCatsFromNet()
         }
     }
 
-    fun setFavoriteCatsList(list: List<CatModelDomain>){
-        _favoriteCatsList.value = list
-    }
-    fun setLoadingPermissionFalse() {
-        _loadingPermission.value = false
+    private suspend fun getFavoriteCatsFromNet(){
+        _favoriteCatsList.value = Resource.Loading(data = null)
+        _favoriteCatsList.value = getFavoriteCatsUseCaseExecuting()
+        Log.e("Loading",  "Data loaded")
     }
 
-
+    private suspend fun getFavoriteCatsUseCaseExecuting(): Resource<List<CatModelDomain>> {
+        return withContext(Dispatchers.IO){
+            try {
+                Log.e("Loading",  "Try to load data")
+                Resource.Success(data = getFavoriteCatsUseCase.execute())
+            } catch (e: java.lang.Exception){
+                Resource.Error(data = null, message = e.message ?: "Error Occurred!")
+            }
+        }
+    }
 }

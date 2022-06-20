@@ -9,61 +9,86 @@ import com.example.wb_8_3.domain.model.CatModelDomain
 import com.example.wb_8_3.domain.usecase.GetCatUseCase
 import com.example.wb_8_3.domain.usecase.PostFavoriteCatUseCase
 import com.example.wb_8_3.utils.Resource
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 class SearchViewModel(
     private val getCatUseCase: GetCatUseCase,
     private val postFavoriteCatUseCase: PostFavoriteCatUseCase
 ) : ViewModel() {
 
-    private val _currentCat = MutableLiveData<CatModelDomain>()
-    val currentCat: LiveData<CatModelDomain>
+    private val _currentCat = MutableLiveData<Resource<CatModelDomain>>()
+    val currentCat: LiveData<Resource<CatModelDomain>>
         get() = _currentCat
 
-    private val _loadingPermission = MutableLiveData<Boolean>()
-    val loadingPermission: LiveData<Boolean>
-        get() = _loadingPermission
+    private val _isCatAdded = MutableLiveData<Resource<Boolean>>()
+    val isCatAdded: LiveData<Resource<Boolean>>
+        get() = _isCatAdded
 
-    private val _enableToTouchLike = MutableLiveData<Boolean>()
-    val enableToTouchLike: LiveData<Boolean>
-        get() = _enableToTouchLike
+    private var enableToTouchLike = true
 
+    private val vmJob = Job()
+    private val vmScope = CoroutineScope(Dispatchers.Main + vmJob)
 
     init {
-        _loadingPermission.value = true
+        getCat()
     }
 
-    fun getCat() = liveData(Dispatchers.IO) {
-        emit(Resource.Loading(data = null))
-        try {
-            Log.e("Loading", "Trying to load data from vm")
-            emit(Resource.Success(data = getCatUseCase.execute()))
-            Log.e("Loading", "Data loaded")
-        } catch (e: Exception) {
-            emit(Resource.Error(data = null, message = e.message ?: "Error Occurred!!!"))
+    fun getCat(){
+        vmScope.launch {
+            getCatFromNet()
         }
     }
 
-    fun postCat() = liveData(Dispatchers.IO) {
-        emit(Resource.Loading(data = null))
-        try {
-            Log.e("Loading", "Trying to load data from vm")
-            emit(Resource.Success(data = currentCat.value?.let { postFavoriteCatUseCase.execute(it) }))
-            Log.e("Loading", "Data loaded")
-        } catch (e: Exception) {
-            emit(Resource.Error(data = null, message = e.message ?: "Error Occurred!!!"))
+    private suspend fun getCatFromNet(){
+        _currentCat.value = Resource.Loading(data = null)
+        _currentCat.value = getCatUseCaseExecuting()
+        enableToTouchLike = true
+        Log.e("Loading",  "Data loaded")
+    }
+
+    private suspend fun getCatUseCaseExecuting(): Resource<CatModelDomain> {
+        return withContext(Dispatchers.IO){
+            try {
+                Log.e("Loading",  "Try to load data")
+                Resource.Success(data = getCatUseCase.execute())
+            } catch (e: java.lang.Exception){
+                Resource.Error(data = null, message = e.message ?: "Error Occurred!")
+            }
         }
     }
 
-    fun setCurrentCat(cat: CatModelDomain) {
-        _currentCat.value = cat
+    fun postCat(){
+        vmScope.launch {
+            if(enableToTouchLike) {
+                enableToTouchLike = false
+                postCatToNet()
+            }
+        }
     }
 
-    fun setLoadingPermissionFalse() {
-        _loadingPermission.value = false
+    private suspend fun postCatToNet(){
+        _isCatAdded.value = Resource.Loading(data = null)
+        _isCatAdded.value = postCatUseCaseExecuting()
+        Log.e("Loading",  "Data loaded")
+        getCat()
     }
 
-    fun setEnableTouchLike(b: Boolean){
-        _enableToTouchLike.value = b
+    private suspend fun postCatUseCaseExecuting(): Resource<Boolean> {
+        return withContext(Dispatchers.IO){
+            try {
+                Log.e("Loading",  "Try to load data")
+                Resource.Success(data = currentCat.value?.data?.let {
+                    postFavoriteCatUseCase.execute(
+                        it
+                    )
+                })
+            } catch (e: java.lang.Exception){
+                Resource.Error(data = null, message = e.message ?: "Error Occurred!")
+            }
+        }
     }
+
+//    fun setEnableTouchLike(b: Boolean){
+//        _enableToTouchLike.value = b
+//    }
 }

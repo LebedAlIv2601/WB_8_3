@@ -12,20 +12,17 @@ abstract class FavoriteCatsDB : RoomDatabase(){
     abstract fun favoriteCatDao(): FavoriteCatDao
 
     companion object {
-        @Volatile
         private var INSTANCE: FavoriteCatsDB? = null
 
         fun getInstance(context: Context): FavoriteCatsDB {
-            synchronized(this) {
-                var instance = INSTANCE
-                if (instance == null) {
-                    instance = Room.databaseBuilder(context.applicationContext,
-                        FavoriteCatsDB::class.java, "products_db")
-                        .build()
-                    INSTANCE = instance
-                }
-                return instance
+            var instance = INSTANCE
+            if (instance == null) {
+                instance = Room.databaseBuilder(context.applicationContext,
+                    FavoriteCatsDB::class.java, "cats_db")
+                    .build()
+                INSTANCE = instance
             }
+            return instance
         }
     }
 }
