@@ -12,7 +12,7 @@ object Environment {
 
     const val FAVOURITE_CAT_QUERY = "favourites"
 
-    const val SUB_ID = "88"
+    const val SUB_ID = "99"
 
     var IS_DATA_CHANGED = false
 
