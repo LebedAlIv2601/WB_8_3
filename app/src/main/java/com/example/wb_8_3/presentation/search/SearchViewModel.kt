@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import com.example.wb_8_3.domain.model.CatModelDomain
 import com.example.wb_8_3.domain.usecase.GetCatUseCase
 import com.example.wb_8_3.domain.usecase.PostFavoriteCatUseCase
@@ -87,8 +86,4 @@ class SearchViewModel(
             }
         }
     }
-
-//    fun setEnableTouchLike(b: Boolean){
-//        _enableToTouchLike.value = b
-//    }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import com.example.wb_8_3.data.network.Environment.IS_DATA_CHANGED
 import com.example.wb_8_3.domain.model.CatModelDomain
 import com.example.wb_8_3.domain.usecase.GetFavoriteCatsUseCase
 import com.example.wb_8_3.utils.Resource
@@ -40,5 +41,10 @@ class FavoriteViewModel (private val getFavoriteCatsUseCase: GetFavoriteCatsUseC
                 Resource.Error(data = null, message = e.message ?: "Error Occurred!")
             }
         }
+    }
+
+    fun updateFavoriteCatsList() {
+        IS_DATA_CHANGED = true
+        getFavoriteCats()
     }
 }

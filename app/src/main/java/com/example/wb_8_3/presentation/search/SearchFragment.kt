@@ -57,6 +57,10 @@ class SearchFragment : Fragment() {
         binding?.buttonLike?.setOnClickListener {
             vm.postCat()
         }
+
+        binding?.retryButton?.setOnClickListener {
+            vm.getCat()
+        }
     }
 
     private fun setupObservers() {
@@ -65,16 +69,19 @@ class SearchFragment : Fragment() {
                 is Resource.Success -> {
                     binding?.catImageImageView?.visibility = View.VISIBLE
                     resource.data?.let { binding?.catImageImageView?.setImageURI(it.url) }
+                    binding?.retryButton?.visibility = View.GONE
                 }
                 is Resource.Error -> {
                     resource.message?.let { Log.e("Error", it) }
                     Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
                     binding?.searchProgressBar?.visibility = View.GONE
                     binding?.catImageImageView?.visibility = View.GONE
+                    binding?.retryButton?.visibility = View.VISIBLE
                 }
                 is Resource.Loading -> {
                     binding?.searchProgressBar?.visibility = View.VISIBLE
                     binding?.catImageImageView?.visibility = View.GONE
+                    binding?.retryButton?.visibility = View.GONE
                 }
             }
         })

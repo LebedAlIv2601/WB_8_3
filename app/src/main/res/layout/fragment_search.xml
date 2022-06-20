@@ -8,6 +8,27 @@
     tools:context=".presentation.search.SearchFragment">
 
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/green"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/cat_image_card_view"
+        app:layout_constraintEnd_toEndOf="@+id/cat_image_card_view"
+        app:layout_constraintStart_toStartOf="@+id/cat_image_card_view"
+        app:layout_constraintTop_toTopOf="@+id/cat_image_card_view">
+
+        <TextView
+            style="@style/text_style"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Retry" />
+
+    </androidx.cardview.widget.CardView>
 
 
     <androidx.cardview.widget.CardView

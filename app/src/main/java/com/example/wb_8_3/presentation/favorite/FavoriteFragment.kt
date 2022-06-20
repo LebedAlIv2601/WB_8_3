@@ -48,8 +48,16 @@ class FavoriteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         vm.getFavoriteCats()
+        setupListeners()
         setupRecyclerView()
         setupObservers()
+    }
+
+    private fun setupListeners() {
+
+        binding?.favoriteRefreshLayout?.setOnRefreshListener {
+            vm.updateFavoriteCatsList()
+        }
     }
 
     private fun setupObservers() {
@@ -64,11 +72,14 @@ class FavoriteFragment : Fragment() {
                         binding?.emptyListMessageTextView?.visibility = View.VISIBLE
                         binding?.favoriteProgressBar?.visibility = View.GONE
                     }
+
+                    binding?.favoriteRefreshLayout?.isRefreshing = false
                 }
                 is Resource.Error -> {
                     resource.message?.let { Log.e("Error", it) }
                     Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
                     binding?.favoriteProgressBar?.visibility = View.GONE
+                    binding?.favoriteRefreshLayout?.isRefreshing = false
                 }
                 is Resource.Loading -> {
                     binding?.favoriteProgressBar?.visibility = View.VISIBLE
